@@ -64,5 +64,47 @@ class TestLibint(unittest.TestCase):
       RHF(ref,h2o).energy()
     )
 
+  def test_expressions(self):
+
+    from libint2.expression import Expression
+
+    ao = [ s, s, p ]
+    C = np.ndarray(shape=[5,10])
+    o = slice(0,4)
+    u = slice(4,10)
+
+    aux = [ p, p, p ]
+    Cx = np.ndarray(shape=[9,7])
+
+    expression = Expression(pqrs=ao, X=aux) # pqrs ao labels + X aux label
+    self.assertEqual(expression.compute("(pq|rs)").shape, (5,5,5,5))
+    self.assertEqual(expression.compute("(p|T|s)").shape, (5,5))
+    self.assertEqual(expression.compute("(p|T|X)").shape, (5,9))
+
+    transforms = {
+      "pqrsλ" : ao, # ao with unicode
+      "ij" : (ao,C[:,o]), # occupied transform
+      "ab" : (ao,C[:,u]), # un-occupied transform
+      "X" : aux, # another basis
+      "x" : (aux,Cx), # another basis transform
+    }
+
+    expression = Expression(**transforms)
+    self.assertEqual(expression.compute("(λ|i)").shape, (5,4))
+    self.assertEqual(expression.compute("i|p").shape, (4,5))
+    self.assertEqual(expression.compute("p|i").shape, (5,4))
+    self.assertEqual(expression.compute("a|i").shape, (6,4))
+    self.assertEqual(expression.compute("x|i").shape, (7,4))
+    self.assertEqual(expression.compute("i|x").shape, (4,7))
+    self.assertEqual(expression.compute("ai|ai").shape, (6,4,6,4))
+    self.assertEqual(expression.compute("ai|ar").shape, (6,4,6,5))
+    self.assertEqual(expression.compute("px|ai").shape, (5,7,6,4))
+
+    # add operator
+    Expression.operator["1/r"] = libint.Operator.nuclear
+    expression = Expression(**transforms, charges=h2o)
+    self.assertEqual(expression.compute("(p | 1/r | a)").shape, (5,6))
+
+
 if __name__ == '__main__':
   unittest.main()
