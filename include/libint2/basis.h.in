@@ -125,27 +125,27 @@ namespace libint2 {
         auto canonical_name = canonicalize_name(name_);
         // some basis sets use cartesian d shells by convention, the convention is taken from Gaussian09
         auto force_cartesian_d = gaussian_cartesian_d_convention(canonical_name);
-        
+
         // parse the name into components
         std::vector<std::string> basis_component_names = decompose_name_into_components(canonical_name);
-        
+
         // ref_shells[component_idx][Z] => vector of Shells
         std::vector<std::vector<std::vector<libint2::Shell>>> component_basis_sets;
         component_basis_sets.reserve(basis_component_names.size());
-        
+
         // read in ALL basis set components
         for(const auto& basis_component_name: basis_component_names) {
           auto file_dot_g94 = basis_lib_path + "/" + basis_component_name + ".g94";
-        
+
           // use same cartesian_d convention for all components!
           component_basis_sets.emplace_back(read_g94_basis_library(file_dot_g94, force_cartesian_d, throw_if_no_match));
         }
-        
+
         // for each atom find the corresponding basis components
         for(auto a=0ul; a<atoms.size(); ++a) {
 
           const std::size_t Z = atoms[a].atomic_number;
-          
+
           // add each component in order
           for(auto comp_idx=0ul; comp_idx!=component_basis_sets.size(); ++comp_idx) {
             const auto& component_basis_set = component_basis_sets[comp_idx];
@@ -202,6 +202,12 @@ namespace libint2 {
         init();
       }
 
+      explicit BasisSet(const std::vector<libint2::Shell> &shells)
+        : std::vector<libint2::Shell>(shells)
+      {
+        init();
+      }
+
       /// forces solid harmonics/Cartesian Gaussians
       /// @param solid if true, force all shells with L>1 to be solid harmonics, otherwise force all shells to Cartesian
       void set_pure(bool solid) {
@@ -240,7 +246,7 @@ namespace libint2 {
       std::vector<std::vector<long>> atom2shell(const std::vector<Atom>& atoms) const {
         return atom2shell(atoms, *this);
       }
-      
+
       /// Computes the map from \c shells to the corresponding atoms in \c atoms. Coordinates are compared bit-wise, i.e.
       /// shell2atom[k] == l iff atoms[l].x == *this[k].O[0] && atoms[l].y == *this[k].O[1] &&  atoms[l].z == *this[k].O[2]
       /// @param throw_if_no_match If true, and no atom matches the origin of a shell, throw a std::logic_error.
@@ -330,7 +336,7 @@ namespace libint2 {
         }
         return false;
       }
-      
+
       /// decompose basis set name into components
       std::vector<std::string> decompose_name_into_components(std::string name) {
         std::vector<std::string> component_names;
@@ -345,7 +351,7 @@ namespace libint2 {
 
         return component_names;
       }
-      
+
       /** determines the path to the data directory, as follows:
        *       <ol>
        *         <li> specified by LIBINT_DATA_PATH environmental variable, if defined </li>
@@ -395,7 +401,7 @@ namespace libint2 {
         }
         return basis_path;
       }
-      
+
       /// converts fortran scientific-notation floats that use d/D instead of e/E in \c str
       /// @param[in,out] str string in which chars 'd' and 'D' are replaced with 'e' and 'E',
       ///                respectively
