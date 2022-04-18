@@ -23,3 +23,6 @@ then either choose path a or b:
    $ make export
    this produces a tarball with a Libint library that can be unpacked, configured, and compiled elsewhere.
 
+Python:
+ $ cmake -DPYTHON_EXECUTABLE=`which python3` -DLIBINT2_PYTHON=ON .
+ $ cd python && make -j2 libint2-python

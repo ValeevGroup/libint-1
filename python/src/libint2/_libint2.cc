@@ -1,5 +1,4 @@
 #include <libint2.hpp>
-#include <libint2/libint2_params.h>
 #include <libint2/chemistry/sto3g_atomic_density.h>
 #include <Eigen/Dense>
 #include <tuple>

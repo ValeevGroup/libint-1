@@ -6,10 +6,10 @@ set(CMAKE_CXX_STANDARD 17)
 add_compile_options(-Wall)
 
 if (TARGET libint2_obj)
-  set(python_libint2_target libint2_obj)
+  set(libint2_python_target libint2_obj)
 else()
   find_package(Libint2 REQUIRED)
-  set(python_libint2_target Libint2::cxx)
+  set(libint2_python_target Libint2::cxx)
 endif()
 
 include(FetchContent)
@@ -23,7 +23,12 @@ FetchContent_MakeAvailable(pybind11)
 
 #find_package(Eigen3 3.3 REQUIRED)
 
-pybind11_add_module(libint2-python MODULE src/libint2/_libint2.cc src/libint2/engine.cc)
+pybind11_add_module(
+  libint2-python MODULE
+  EXCLUDE_FROM_ALL
+  src/libint2/_libint2.cc
+  src/libint2/engine.cc
+  )
 
 set_target_properties(
   libint2-python
@@ -32,7 +37,7 @@ set_target_properties(
   OUTPUT_NAME _libint2
   )
 
-target_link_libraries(libint2-python PUBLIC ${python_libint2_target})
+target_link_libraries(libint2-python PUBLIC ${libint2_python_target})
 
 # if (Eigen3::Eigen)
 #   target_link_libraries(libint2-python INTERFACE Eigen3::Eigen)
@@ -48,7 +53,7 @@ enable_testing()
 
 # add the executable
 add_test(
-  NAME test_libint
+  NAME libint2-python
   COMMAND ${PYTHON_EXECUTABLE} -m setup test
   WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
   )
